@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cancio Orders — Painel</title>
+  <style>
+    :root{
+      --bg:#f4f5f3;--card:#fff;--text:#182019;--muted:#70786f;
+      --line:#e2e5df;--accent:#4f613e;--accent2:#e9eee4;
+      --danger:#a64040;--warning:#a87524;--success:#3e7650;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select{font:inherit} button{cursor:pointer}
+    .app{min-height:100vh;display:flex}
+    aside{width:245px;background:#172016;color:#fff;padding:22px 16px;position:fixed;inset:0 auto 0 0}
+    .brand{font-weight:800;font-size:22px;letter-spacing:-.5px;padding:4px 10px 25px}.brand span{color:#b9c9aa}
+    .restaurant{margin:0 6px 20px;padding:13px;border:1px solid #34402f;border-radius:14px;background:#202d1e}
+    .restaurant small{display:block;color:#aab4a5;margin-bottom:4px}.restaurant strong{font-size:14px}
+    nav button{width:100%;border:0;background:transparent;color:#cbd2c7;text-align:left;padding:12px 13px;border-radius:10px;margin:2px 0}
+    nav button.active,nav button:hover{background:#2c3929;color:#fff}
+    main{margin-left:245px;width:calc(100% - 245px);padding:28px;max-width:1500px}
+    .top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:25px}
+    h1{margin:0;font-size:28px;letter-spacing:-.7px}.sub{color:var(--muted);margin-top:5px}
+    .live{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:10px 13px;border-radius:10px;font-size:13px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#4e9b5d}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}
+    .stat,.panel,.order{background:var(--card);border:1px solid var(--line);border-radius:15px}
+    .stat{padding:17px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:7px}
+    .layout{display:grid;grid-template-columns:1.7fr 1fr;gap:18px}
+    .panel{padding:18px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panel h2{font-size:17px;margin:0}
+    .filters{display:flex;gap:7px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:#fff;padding:7px 10px;border-radius:8px;color:#60685e;font-size:12px}.filter.active{background:var(--accent2);border-color:#cbd7c2;color:#314127}
+    .orders{display:grid;gap:10px}
+    .order{padding:15px}.order-top{display:flex;justify-content:space-between;gap:10px}.order-id{font-weight:800}.source{font-size:11px;padding:4px 7px;border-radius:6px;background:#eef1ed;color:#52604e}
+    .meta{font-size:12px;color:var(--muted);margin-top:4px}.items{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;font-size:13px;display:grid;gap:5px}.item{display:flex;justify-content:space-between;gap:10px}
+    .total{display:flex;justify-content:space-between;margin-top:12px;font-weight:800}.actions{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
+    .btn{border:0;border-radius:8px;padding:9px 11px;font-size:12px;background:#edf0eb;color:#293229}.btn.primary{background:var(--accent);color:#fff}.btn.danger{color:#8c3333;background:#f7eaea}
+    .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+    .chart{display:flex;align-items:end;height:165px;gap:10px;padding:15px 8px 5px;border-bottom:1px solid var(--line)}
+    .bar-wrap{flex:1;height:100%;display:flex;align-items:end;justify-content:center;position:relative}.bar{width:70%;max-width:32px;background:#9eac94;border-radius:6px 6px 0 0;min-height:4px}.bar-label{position:absolute;bottom:-24px;font-size:10px;color:var(--muted)}
+    .origin{display:grid;gap:11px;margin-top:28px}.origin-row{display:grid;grid-template-columns:90px 1fr 35px;gap:8px;align-items:center;font-size:12px}.track{height:8px;background:#eef0ed;border-radius:99px;overflow:hidden}.fill{height:100%;background:#728465;border-radius:99px}
+    .hidden{display:none}.modal-bg{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:18px}.modal-bg.open{display:flex}.modal{background:#fff;width:min(520px,100%);border-radius:16px;padding:20px}.modal h2{margin:0 0 15px}.form{display:grid;gap:10px}.form label{font-size:12px;color:var(--muted)}.form input,.form select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+    @media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
+    @media(max-width:700px){aside{position:static;width:100%;height:auto}.app{display:block}main{margin:0;width:100%;padding:18px}.stats{grid-template-columns:repeat(2,1fr)}.top{align-items:stretch;flex-direction:column}.stat strong{font-size:21px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">CANCIO <span>ORDERS</span></div>
+    <div class="restaurant"><small>Restaurante ativo</small><strong id="restaurantName">Mistura Boa</strong></div>
+    <nav>
+      <button class="active" data-view="dashboard">▦ Dashboard</button>
+      <button data-view="orders">↗ Pedidos</button>
+      <button data-view="products">☷ Produtos</button>
+      <button data-view="tables">▦ Mesas</button>
+      <button data-view="history">◷ Histórico</button>
+      <button data-view="settings">⚙ Configurações</button>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="top">
+      <div><h1 id="pageTitle">Dashboard</h1><div class="sub">Central de pedidos do restaurante</div></div>
+      <div class="live"><span class="dot"></span> Sistema online · dados de demonstração</div>
+    </div>
+
+    <section id="dashboardView">
+      <div class="stats">
+        <div class="stat"><small>Pedidos hoje</small><strong id="statOrders">0</strong></div>
+        <div class="stat"><small>Total registrado</small><strong id="statTotal">R$ 0,00</strong></div>
+        <div class="stat"><small>Novos</small><strong id="statNew">0</strong></div>
+        <div class="stat"><small>Em preparo</small><strong id="statPrep">0</strong></div>
+        <div class="stat"><small>Prontos</small><strong id="statReady">0</strong></div>
+      </div>
+      <div class="layout">
+        <section class="panel">
+          <div class="panel-head"><h2>Pedidos recentes</h2><button class="btn primary" id="newOrderBtn">+ Novo pedido</button></div>
+          <div class="filters" id="dashFilters"></div>
+          <div class="orders" id="ordersList"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h2>Resumo por origem</h2></div>
+          <div class="chart" id="chart"></div>
+          <div class="origin" id="originList"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="genericView" class="hidden">
+      <div class="panel" id="genericContent"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>Novo pedido manual</h2>
+    <div class="form">
+      <div><label>Origem</label><select id="mSource"><option>WhatsApp</option><option>Telefone</option><option>Balcão</option><option>Outro</option></select></div>
+      <div><label>Tipo / mesa</label><input id="mTable" placeholder="Ex.: Mesa 08 ou Delivery"></div>
+      <div><label>Cliente</label><input id="mCustomer" placeholder="Nome do cliente (opcional)"></div>
+      <div><label>Pedido</label><input id="mItems" placeholder="Ex.: 2x X-Burger, 1x Coca"></div>
+      <div><label>Total (R$)</label><input id="mTotal" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    </div>
+    <div class="modal-actions"><button class="btn" id="closeModal">Cancelar</button><button class="btn primary" id="saveModal">Adicionar pedido</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const state = {
+    orders: [
+      {id:104,source:"Site",place:"Mesa 08",customer:"",items:[["2× X-Burger",50],["1× Coca-Cola",7]],total:57,status:"Novo",time:"18:32"},
+      {id:103,source:"WhatsApp",place:"Delivery",customer:"João",items:[["1× Pizza Calabresa",59]],total:59,status:"Em preparo",time:"18:25"},
+      {id:102,source:"Balcão",place:"Retirada",customer:"",items:[["1× Combo Mistura",42]],total:42,status:"Pronto",time:"18:11"},
+      {id:101,source:"Site",place:"Mesa 03",customer:"",items:[["1× Pão com Pernil",25],["1× Suco",8]],total:33,status:"Entregue",time:"17:58"},
+      {id:100,source:"Telefone",place:"Delivery",customer:"Maria",items:[["2× X-Salada",48]],total:48,status:"Entregue",time:"17:40"}
+    ],
+    filter:"Todos"
+  };
+  const money = n => n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const $ = id => document.getElementById(id);
+
+  function renderStats(){
+    $("statOrders").textContent=state.orders.length;
+    $("statTotal").textContent=money(state.orders.reduce((a,o)=>a+o.total,0));
+    $("statNew").textContent=state.orders.filter(o=>o.status==="Novo").length;
+    $("statPrep").textContent=state.orders.filter(o=>o.status==="Em preparo").length;
+    $("statReady").textContent=state.orders.filter(o=>o.status==="Pronto").length;
+  }
+
+  function renderFilters(){
+    const sources=["Todos","Site","WhatsApp","Telefone","Balcão","Outro"];
+    $("dashFilters").innerHTML=sources.map(x=>`<button class="filter ${state.filter===x?"active":""}" data-filter="${x}">${x}</button>`).join("");
+    $("dashFilters").querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{state.filter=b.dataset.filter;render();}));
+  }
+
+  function nextAction(o){
+    if(o.status==="Novo") return `<button class="btn primary" data-act="confirm" data-id="${o.id}">Confirmar</button><button class="btn danger" data-act="cancel" data-id="${o.id}">Recusar</button>`;
+    if(o.status==="Confirmado") return `<button class="btn primary" data-act="prep" data-id="${o.id}">Iniciar preparo</button>`;
+    if(o.status==="Em preparo") return `<button class="btn primary" data-act="ready" data-id="${o.id}">Marcar pronto</button>`;
+    if(o.status==="Pronto") return `<button class="btn primary" data-act="done" data-id="${o.id}">Entregar</button>`;
+    return `<button class="btn" data-act="details" data-id="${o.id}">Ver detalhes</button>`;
+  }
+
+  function renderOrders(){
+    const arr=state.orders.filter(o=>state.filter==="Todos"||o.source===state.filter);
+    $("ordersList").innerHTML=arr.length?arr.map(o=>`
+      <article class="order">
+        <div class="order-top"><div><span class="order-id">#${o.id} · ${o.place}</span><div class="meta">${o.customer?o.customer+" · ":""}${o.time}</div></div><span class="source">${o.source}</span></div>
+        <div class="items">${o.items.map(i=>`<div class="item"><span>${i[0]}</span><span>${money(i[1])}</span></div>`).join("")}</div>
+        <div class="total"><span>${o.status}</span><span>${money(o.total)}</span></div>
+        <div class="actions">${nextAction(o)}</div>
+      </article>`).join(""):`<div class="empty">Nenhum pedido nessa origem.</div>`;
+    $("ordersList").querySelectorAll("[data-act]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.act,Number(b.dataset.id))));
+  }
+
+  function renderChart(){
+    const labels=["Site","WhatsApp","Balcão","Telefone","Outro"];
+    const counts=labels.map(x=>state.orders.filter(o=>o.source===x).length);
+    const max=Math.max(1,...counts);
+    $("chart").innerHTML=counts.map((c,i)=>`<div class="bar-wrap"><div class="bar" style="height:${Math.max(4,c/max*90)}%"></div><div class="bar-label">${labels[i]}</div></div>`).join("");
+    $("originList").innerHTML=labels.map((x,i)=>`<div class="origin-row"><span>${x}</span><div class="track"><div class="fill" style="width:${counts[i]/max*100}%"></div></div><strong>${counts[i]}</strong></div>`).join("");
+  }
+
+  function render(){renderStats();renderFilters();renderOrders();renderChart();}
+  function act(action,id){
+    const o=state.orders.find(x=>x.id===id); if(!o)return;
+    const map={confirm:"Confirmado",prep:"Em preparo",ready:"Pronto",done:"Entregue",cancel:"Cancelado"};
+    if(action==="details"){alert(`Pedido #${o.id}\\nOrigem: ${o.source}\\nLocal: ${o.place}\\nTotal: ${money(o.total)}\\nStatus: ${o.status}`);return;}
+    o.status=map[action]||o.status; render();
+  }
+
+  function showView(view){
+    const titles={dashboard:"Dashboard",orders:"Pedidos",products:"Produtos",tables:"Mesas",history:"Histórico",settings:"Configurações"};
+    $("pageTitle").textContent=titles[view];
+    $("dashboardView").classList.toggle("hidden",view!=="dashboard");
+    $("genericView").classList.toggle("hidden",view==="dashboard");
+    if(view!=="dashboard"){
+      const content={
+        orders:`<h2>Pedidos</h2><p class="sub">Aqui ficará a gestão completa dos pedidos em tempo real. No MVP visual, os pedidos usam os mesmos dados do Dashboard.</p><button class="btn primary" id="genericNew">+ Novo pedido</button>`,
+        products:`<h2>Produtos</h2><p class="sub">Cadastro de produtos, preços, categorias, fotos e disponibilidade será conectado ao Supabase na próxima etapa.</p><div class="empty">Módulo preparado para integração.</div>`,
+        tables:`<h2>Mesas</h2><p class="sub">Mesas, QR Codes e futuramente NFC serão vinculados ao restaurante.</p><div class="empty">01 · 02 · 03 · 04 · 05 · 06 · 07 · 08</div>`,
+        history:`<h2>Histórico</h2><p class="sub">Pedidos encerrados ficam registrados aqui para consulta e relatórios.</p><div class="orders">${state.orders.filter(o=>["Entregue","Cancelado"].includes(o.status)).map(o=>`<div class="order"><b>#${o.id} · ${o.place}</b><div class="meta">${o.source} · ${o.status} · ${money(o.total)}</div></div>`).join("")}</div>`,
+        settings:`<h2>Configurações</h2><p class="sub">Restaurante: Mistura Boa</p><div class="empty">Configurações de identidade, horários, contatos e usuários serão conectadas ao cadastro do restaurante.</div>`
+      };
+      $("genericContent").innerHTML=content[view];
+      const n=$("genericNew"); if(n)n.addEventListener("click",openModal);
+    }
+  }
+
+  function openModal(){$("modalBg").classList.add("open");$("mItems").focus();}
+  function closeModal(){$("modalBg").classList.remove("open");}
+  $("newOrderBtn").addEventListener("click",openModal); $("closeModal").addEventListener("click",closeModal);
+  $("modalBg").addEventListener("click",e=>{if(e.target===$("modalBg"))closeModal();});
+  $("saveModal").addEventListener("click",()=>{
+    const total=Number($("mTotal").value);
+    if(!Number.isFinite(total)||total<0){alert("Informe um total válido.");return;}
+    const raw=$("mItems").value.trim()||"Pedido manual";
+    state.orders.unshift({id:Math.max(...state.orders.map(o=>o.id))+1,source:$("mSource").value,place:$("mTable").value.trim()||"Balcão",customer:$("mCustomer").value.trim(),items:[[raw,total]],total,status:"Novo",time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
+    ["mTable","mCustomer","mItems","mTotal"].forEach(id=>$(id).value=""); closeModal(); render();
+  });
+  document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");showView(b.dataset.view);}));
+  render();
+})();
+</script>
+</body>
+</html>
